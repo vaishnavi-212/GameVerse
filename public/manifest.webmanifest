@@ -1,0 +1,17 @@
+{
+  "name": "GameVerse \u2014 Play what the moment feels like.",
+  "short_name": "GameVerse",
+  "description": "Play 20 classic arcade, puzzle, board, and strategy mini-games completely offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

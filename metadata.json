@@ -1,0 +1,6 @@
+{
+  "name": "GameVerse",
+  "description": "An offline-first collection of 20 classic arcade, puzzle, board, and strategy mini-games with local multiplayer and high scores.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

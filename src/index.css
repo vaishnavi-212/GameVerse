@@ -1051,3 +1051,33 @@
   @keyframes gv-motion-card-counter{from{transform:translate(-50%,-50%) rotate(var(--angle)) translateX(clamp(98px,26vw,140px)) rotate(calc(-1 * var(--angle))) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(var(--angle)) translateX(clamp(98px,26vw,140px)) rotate(calc(-1 * var(--angle))) rotate(-360deg)}}
 }
 @media(prefers-reduced-motion:reduce){.gv-motion-orbit,.gv-motion-orbit .gv-motion-card{animation:none!important}.gv-motion-orbit{transform:none!important}}
+
+
+/* Privacy-first offline sync indicator */
+.gv-sync-status{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9999;
+  max-width:min(320px,calc(100vw - 36px));
+  padding:10px 14px;
+  border:2px solid #201d28;
+  border-radius:999px;
+  background:#fffaf0;
+  color:#201d28;
+  box-shadow:5px 5px 0 #201d28;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.02em;
+  pointer-events:none;
+}
+@media (max-width:640px){
+  .gv-sync-status{
+    right:12px;
+    bottom:12px;
+    max-width:calc(100vw - 24px);
+    font-size:11px;
+    padding:8px 12px;
+    box-shadow:3px 3px 0 #201d28;
+  }
+}

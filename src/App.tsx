@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameItem, UserStats, AppSettings } from './types';
 import { GAMES_LIST } from './data/gamesList';
 import { storage } from './utils/storage';
 import { sound } from './utils/audio';
 import { Home } from './components/Home';
 import { GameInstructions } from './components/common/GameInstructions';
+import { endGameSession, initializeAnonymousTracking, startGameSession, subscribeToSyncState, touchAppSession, type SyncState } from './utils/analytics';
 
 const GAME_THEME_COLORS: Record<string, { primary: string; secondary: string; accent: string }> = {
   snake:{primary:'#4CEB73',secondary:'#7B4DFF',accent:'#FFE55C'}, 'game-2048':{primary:'#B8F04A',secondary:'#FF8A3D',accent:'#FFE45C'},
@@ -46,6 +47,35 @@ export default function App() {
   const [stats, setStats] = useState<UserStats>(() => storage.getStats());
   const [settings, setSettings] = useState<AppSettings>(() => storage.getSettings());
   const [favorites, setFavorites] = useState<string[]>(() => storage.getFavorites());
+  const [syncState, setSyncState] = useState<SyncState>({
+    online: navigator.onLine,
+    pending: 0,
+    syncing: false,
+    configured: true,
+  });
+  const activeCloudSession = useRef<{ id: string; startedAtMs: number; ended: boolean } | null>(null);
+
+  // Anonymous, privacy-preserving usage tracking. Personal game data remains local.
+  useEffect(() => {
+    const cleanupTracking = initializeAnonymousTracking();
+    const unsubscribe = subscribeToSyncState(setSyncState);
+
+    const activityTimer = window.setInterval(() => {
+      void touchAppSession();
+    }, 60_000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void touchAppSession();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      cleanupTracking();
+      unsubscribe();
+      window.clearInterval(activityTimer);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   // Register service worker for offline PWA functionality
   useEffect(() => {
@@ -65,15 +95,45 @@ export default function App() {
   }, [settings.soundEnabled]);
 
   const handleSelectGame = (game: GameItem) => {
+    // One local play increment per game launch.
     storage.recordGamePlay(game.id);
     setStats(storage.getStats());
+
+    const startedAtMs = Date.now();
+    activeCloudSession.current = { id: '', startedAtMs, ended: false };
+    void startGameSession(game.title).then((id) => {
+      if (activeCloudSession.current && activeCloudSession.current.startedAtMs === startedAtMs) {
+        activeCloudSession.current.id = id;
+      }
+    });
+
     setActiveGame(game);
+    void touchAppSession();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const finishActiveCloudSession = useCallback(() => {
+    const session = activeCloudSession.current;
+    if (!session || session.ended) return;
+    session.ended = true;
+    if (session.id) {
+      void endGameSession(session.id, session.startedAtMs);
+    } else {
+      // The ID is normally available immediately; wait a moment if startup is still resolving.
+      window.setTimeout(() => {
+        const current = activeCloudSession.current;
+        if (current?.id && current.ended) {
+          void endGameSession(current.id, current.startedAtMs);
+        }
+      }, 250);
+    }
+  }, []);
+
   const handleBackToHome = () => {
+    finishActiveCloudSession();
     sound.playTap();
     setActiveGame(null);
+    void touchAppSession();
   };
 
   const handleToggleFavorite = (gameId: string) => {
@@ -107,8 +167,11 @@ export default function App() {
   const handleGameOver = useCallback(
     (score: number, isWin: boolean) => {
       if (!activeGame) return;
+      // Game completion updates the local personal record without adding a second play.
       storage.recordScore(activeGame.id, score, isWin);
       setStats(storage.getStats());
+      finishActiveCloudSession();
+      void touchAppSession();
     },
     [activeGame]
   );
@@ -185,6 +248,22 @@ export default function App() {
 
   return (
     <div className={activeGame ? "gameverse-game-root" : "gameverse-root"} style={activeGame ? ({ '--game-primary': (GAME_THEME_COLORS[activeGame.id] || {primary:'#FF4F8B'}).primary, '--game-secondary': (GAME_THEME_COLORS[activeGame.id] || {secondary:'#67D8FF'}).secondary, '--game-accent': (GAME_THEME_COLORS[activeGame.id] || {accent:'#FFE45C'}).accent } as React.CSSProperties) : undefined}>
+      <div
+        className="gv-sync-status"
+        role="status"
+        aria-live="polite"
+        title={syncState.configured ? 'Anonymous usage sync status' : 'Cloud usage tracking is not configured yet'}
+      >
+        {syncState.syncing
+          ? '☁ Syncing activity…'
+          : !syncState.online
+            ? `☁ ${syncState.pending || 0} activit${syncState.pending === 1 ? 'y' : 'ies'} waiting to sync`
+            : syncState.pending > 0
+              ? `☁ ${syncState.pending} activit${syncState.pending === 1 ? 'y' : 'ies'} waiting to sync`
+              : syncState.configured
+                ? '✓ You’re all synced'
+                : '☁ Offline-ready'}
+      </div>
       {activeGame ? (
         <>
           {renderGameContent()}

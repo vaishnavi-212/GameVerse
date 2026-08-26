@@ -101,6 +101,29 @@ export function toggleFavoriteGameId(gameId: string): string[] {
   return updated;
 }
 
+
+export function recordGameResult(gameId: string, isWin: boolean = false, score?: number): UserStats {
+  const current = getStoredStats();
+
+  let nextHighScores = { ...current.highScores };
+  if (score !== undefined) {
+    const prevBest = current.highScores[gameId] || 0;
+    if (score > prevBest) {
+      nextHighScores[gameId] = score;
+    }
+  }
+
+  const updated: UserStats = {
+    ...current,
+    totalWins: current.totalWins + (isWin ? 1 : 0),
+    highScores: nextHighScores,
+    lastPlayed: { ...current.lastPlayed, [gameId]: new Date().toISOString() },
+  };
+
+  saveStats(updated);
+  return updated;
+}
+
 export function resetAllData(): void {
   try {
     localStorage.removeItem(STATS_KEY);
@@ -118,7 +141,7 @@ export const storage = {
   toggleFavorite: toggleFavoriteGameId,
   recordGamePlay: (gameId: string) => recordGamePlay(gameId, false),
   recordScore: (gameId: string, score: number, isWin: boolean = false) =>
-    recordGamePlay(gameId, isWin, score),
+    recordGameResult(gameId, isWin, score),
   resetStats: () => {
     localStorage.removeItem(STATS_KEY);
     return DEFAULT_STATS;

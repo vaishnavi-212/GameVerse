@@ -248,7 +248,7 @@ const GAME_ART_FILES:Record<string,string>={
   // Bright, cartoon-style artwork for the most visible cards. The rest keep their game-specific illustrations.
   snake:'snake.svg', 'game-2048':'game-2048.svg', tictactoe:'tictactoe.svg', 'connect-four':'connect-four.svg', chess:'chess.svg', checkers:'checkers.svg', 'memory-match':'memory-match.svg', 'whack-a-mole':'whack-a-mole.svg', 'word-guess':'word-guess.svg', hangman:'hangman.svg', sudoku:'sudoku.svg', 'rock-paper-scissors':'rock-paper-scissors.svg', 'number-guess':'number-guess.svg', ludo:'ludo.svg', 'snakes-and-ladders':'snakes-and-ladders.svg', 'trivia-quiz':'trivia-quiz.svg', 'typing-test':'typing-test.svg', 'reaction-time':'reaction-time.svg', 'bubble-shooter':'bubble-shooter.svg', 'target-hitter':'target-hitter.svg'
 };
-const GameArt:React.FC<{id:string;title:string}>=({id,title})=>{const file=GAME_ART_FILES[id];return <div className="gv-game-illustration gv-game-image-illustration">{file?<img src={`/game-art/${file}`} alt={`${title} game artwork`} loading="lazy"/>:<span className="ga-main">🎮</span>}</div>};
+const GameArt:React.FC<{id:string;title:string}>=({id,title})=>{const file=GAME_ART_FILES[id];return <div className="gv-game-illustration gv-game-image-illustration">{file?<img src={`/game-art/${file}`} alt={`${title} game artwork`} loading="eager" decoding="async" draggable={false}/>:<span className="ga-main">🎮</span>}</div>};
 const HeroOrbitalScene: React.FC = () => {
   const sceneRef=useRef<HTMLDivElement>(null);
   const [tilt,setTilt]=useState({x:0,y:0});
@@ -270,9 +270,27 @@ const HeroOrbitalScene: React.FC = () => {
 };
 
 const GameGalaxy:React.FC<{games:GameItem[];onSelectGame:(game:GameItem)=>void}>=({games,onSelectGame})=>{
-  const picks=games.filter(g=>g.featured).slice(0,4);
-  const fallback=games.slice(0,4);
-  const orbitGames=picks.length===4?picks:fallback;
+  // UI-only rotation: this never touches Firebase/database calls or game progress.
+  const pickFour=(pool:GameItem[],avoid:string[]=[]):GameItem[]=>{
+    const preferred=pool.filter(g=>!avoid.includes(g.id));
+    const source=preferred.length>=4?preferred:pool;
+    const shuffled=[...source].sort(()=>Math.random()-.5);
+    const unique:GameItem[]=[];
+    for(const game of shuffled){if(!unique.some(item=>item.id===game.id)) unique.push(game);if(unique.length===Math.min(4,pool.length)) break;}
+    return unique;
+  };
+  const [orbitGames,setOrbitGames]=useState<GameItem[]>([]);
+  // UI-only: populate as soon as the game list is available. This does not touch
+  // Firebase/database calls, scores, sync state, or game functionality.
+  useEffect(()=>{
+    setOrbitGames(pickFour(games));
+  },[games]);
+  // Keep the orbit varied without ever changing application data.
+  useEffect(()=>{
+    if(games.length<2)return;
+    const timer=window.setInterval(()=>setOrbitGames(current=>pickFour(games,current.map(g=>g.id))),12000);
+    return()=>window.clearInterval(timer);
+  },[games]);
   const surprise=()=>{const list=orbitGames.length?orbitGames:games;onSelectGame(list[Math.floor(Math.random()*list.length)]);};
   return <section className="gv-game-galaxy">
     <div className="gv-galaxy-heading"><p className="gv-eyebrow">YOUR NEXT PLAYGROUND</p><h2>WHAT ARE YOU<br/><em>PLAYING NEXT?</em></h2></div>

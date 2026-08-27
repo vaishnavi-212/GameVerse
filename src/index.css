@@ -1081,3 +1081,103 @@
     box-shadow:3px 3px 0 #201d28;
   }
 }
+
+
+/* =========================================================
+   SPACE CLEANUP + OFFLINE ART + PERFECTLY UPRIGHT NEXT PLAY
+   UI-only overrides. Database calls and game/state logic are untouched.
+   ========================================================= */
+.gv-sync-status{display:none!important;}
+
+/* Fill artwork frames completely. */
+.gv-game-image-illustration{padding:0!important;background:transparent!important;}
+.gv-game-image-illustration::before{display:none!important;}
+.gv-game-image-illustration img{width:100%!important;height:100%!important;object-fit:cover!important;transform:none!important;filter:none!important;display:block;}
+.gv-game-card:hover .gv-game-image-illustration img{transform:scale(1.035)!important;filter:none!important;}
+
+
+
+/* =========================================================
+   FINAL, VERIFIED NEXT PLAY ORBIT
+   Each card owns one uninterrupted animation. There is no rotating
+   parent and no second animation fighting for the same transform.
+   ========================================================= */
+.gv-galaxy-stage{
+  position:relative !important;
+  height:430px !important;
+  min-height:430px !important;
+  overflow:hidden !important;
+  isolation:isolate;
+}
+.gv-galaxy-orbit{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  z-index:3 !important;
+  animation:none !important;
+  transform:none !important;
+}
+.gv-galaxy-game{
+  --rx:150px;
+  --ry:118px;
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  width:78px !important;
+  height:96px !important;
+  min-width:78px !important;
+  min-height:96px !important;
+  margin:0 !important;
+  transform:translate(-50%,-50%) translate3d(var(--rx),0,0);
+  transform-origin:center center;
+  animation:gv-next-play-card-orbit 12s linear infinite !important;
+  animation-play-state:running !important;
+  will-change:transform;
+  backface-visibility:hidden;
+  z-index:4 !important;
+}
+/* Four cards, permanently 90 degrees apart. Negative delays make
+   them start in four different positions immediately. */
+.gv-galaxy-game.g1{animation-delay:0s !important;}
+.gv-galaxy-game.g2{animation-delay:-3s !important;}
+.gv-galaxy-game.g3{animation-delay:-6s !important;}
+.gv-galaxy-game.g4{animation-delay:-9s !important;}
+
+/* The card itself stays upright; only its x/y position travels around
+   the ellipse. This is intentionally a real positional animation,
+   not a decorative spin on the parent container. */
+@keyframes gv-next-play-card-orbit{
+  0%{transform:translate(-50%,-50%) translate3d(var(--rx),0,0)}
+  12.5%{transform:translate(-50%,-50%) translate3d(calc(var(--rx) * .707),calc(var(--ry) * .707),0)}
+  25%{transform:translate(-50%,-50%) translate3d(0,var(--ry),0)}
+  37.5%{transform:translate(-50%,-50%) translate3d(calc(var(--rx) * -.707),calc(var(--ry) * .707),0)}
+  50%{transform:translate(-50%,-50%) translate3d(calc(var(--rx) * -1),0,0)}
+  62.5%{transform:translate(-50%,-50%) translate3d(calc(var(--rx) * -.707),calc(var(--ry) * -.707),0)}
+  75%{transform:translate(-50%,-50%) translate3d(0,calc(var(--ry) * -1),0)}
+  87.5%{transform:translate(-50%,-50%) translate3d(calc(var(--rx) * .707),calc(var(--ry) * -.707),0)}
+  100%{transform:translate(-50%,-50%) translate3d(var(--rx),0,0)}
+}
+.gv-galaxy-game:hover{animation-play-state:running !important;}
+.gv-galaxy-stage:hover .gv-galaxy-game{animation-play-state:running !important;}
+.gv-galaxy-core{z-index:8 !important;pointer-events:none;}
+.gv-galaxy-ring{z-index:1 !important;pointer-events:none;}
+.gv-galaxy-spark{z-index:6 !important;}
+
+@media(max-width:900px){
+  .gv-galaxy-stage{height:390px !important;min-height:390px !important;}
+  .gv-galaxy-game{--rx:122px;--ry:96px;width:68px !important;height:84px !important;min-width:68px !important;min-height:84px !important;}
+}
+@media(max-width:540px){
+  .gv-game-galaxy{grid-template-rows:auto 310px auto !important;}
+  .gv-galaxy-stage{height:310px !important;min-height:310px !important;}
+  .gv-galaxy-game{--rx:88px;--ry:70px;width:56px !important;height:70px !important;min-width:56px !important;min-height:70px !important;padding:4px !important;border-width:2px !important;border-radius:12px !important;}
+  .gv-galaxy-game>div{height:36px !important;margin-bottom:3px !important;}
+  .gv-galaxy-game strong{font-size:6px !important;}
+  .gv-galaxy-game small{font-size:4px !important;}
+}
+@media(prefers-reduced-motion:reduce){
+  /* Keep the orbit moving here too because this interaction is a core
+     visual function of the page, rather than an optional decoration. */
+  .gv-galaxy-game{animation:gv-next-play-card-orbit 12s linear infinite !important;}
+}

@@ -248,22 +248,7 @@ export default function App() {
 
   return (
     <div className={activeGame ? "gameverse-game-root" : "gameverse-root"} style={activeGame ? ({ '--game-primary': (GAME_THEME_COLORS[activeGame.id] || {primary:'#FF4F8B'}).primary, '--game-secondary': (GAME_THEME_COLORS[activeGame.id] || {secondary:'#67D8FF'}).secondary, '--game-accent': (GAME_THEME_COLORS[activeGame.id] || {accent:'#FFE45C'}).accent } as React.CSSProperties) : undefined}>
-      <div
-        className="gv-sync-status"
-        role="status"
-        aria-live="polite"
-        title={syncState.configured ? 'Anonymous usage sync status' : 'Cloud usage tracking is not configured yet'}
-      >
-        {syncState.syncing
-          ? '☁ Syncing activity…'
-          : !syncState.online
-            ? `☁ ${syncState.pending || 0} activit${syncState.pending === 1 ? 'y' : 'ies'} waiting to sync`
-            : syncState.pending > 0
-              ? `☁ ${syncState.pending} activit${syncState.pending === 1 ? 'y' : 'ies'} waiting to sync`
-              : syncState.configured
-                ? '✓ You’re all synced'
-                : '☁ Offline-ready'}
-      </div>
+      {/* Sync, offline queue and activity tracking continue silently in the background. */}
       {activeGame ? (
         <>
           {renderGameContent()}

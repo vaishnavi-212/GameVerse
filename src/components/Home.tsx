@@ -116,10 +116,81 @@ const HomePage: React.FC<HomeProps & {navigate:(p:Page)=>void}> = ({games,stats,
 };
 
 const MoodyPage: React.FC<HomeProps> = ({games,onSelectGame}) => {
-  const [selected,setSelected]=useState('chill'); const [shuffle,setShuffle]=useState(0);
-  const mood=moodData.find(m=>m.id===selected)!; const picks=mood.match.map(id=>games.find(g=>g.id===id)).filter(Boolean) as GameItem[];
-  const surpriseMood=()=>{const next=moodData[Math.floor(Math.random()*moodData.length)];setSelected(next.id);setShuffle(s=>s+1);sound.playPop();};
-  return <main className="gv-main gv-page-moody"><section className="gv-page-hero gv-moody-hero"><p className="gv-eyebrow">YOUR VIBE IS THE REMOTE CONTROL</p><h1>HOW ARE WE<br/><em>FEELING?</em></h1><p>Pick the energy. We’ll turn it into a game plan.</p><button className="gv-cta gv-cta-purple" onClick={surpriseMood}>SURPRISE MY MOOD <Shuffle/></button></section><section className="gv-mood-wall">{moodData.map(m=>{const I=m.icon;return <button key={m.id} className={`gv-mood-tile ${selected===m.id?'selected':''}`} onClick={()=>setSelected(m.id)} style={{'--p':m.primary,'--s':m.secondary,'--a':m.accent} as React.CSSProperties}><div><I/><strong>{m.label}</strong></div><span>{m.text}</span><ArrowRight/></button>})}</section><section className="gv-mood-result" key={shuffle} style={{'--p':mood.primary,'--s':mood.secondary,'--a':mood.accent} as React.CSSProperties}><div className="gv-result-copy"><p className="gv-eyebrow">MOOD MATCH FOUND</p><h2>{mood.label}<br/><em>energy detected.</em></h2><p>These games match your pace right now. Zero overthinking required.</p><button onClick={surpriseMood}>RESHUFFLE PICKS <Shuffle/></button></div><div className="gv-result-games">{picks.slice(0,4).map((g,i)=><button key={g.id} className="gv-result-game" onClick={()=>onSelectGame(g)}><span>{String(i+1).padStart(2,'0')}</span><IconHelper name={g.icon} className="w-8 h-8"/><b>{g.title}</b><small>{g.description}</small><i>PLAY <ArrowRight/></i></button>)}</div></section></main>;
+  const [selected,setSelected]=useState('chill');
+  const [shuffle,setShuffle]=useState(0);
+  const resultsRef=useRef<HTMLElement>(null);
+
+  const mood=moodData.find(m=>m.id===selected)!;
+  const picks=mood.match.map(id=>games.find(g=>g.id===id)).filter(Boolean) as GameItem[];
+
+  const scrollToMatches=()=>{
+    // Wait for React to update the selected mood before moving to the matching games.
+    window.requestAnimationFrame(()=>{
+      resultsRef.current?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  };
+
+  const chooseMood=(id:string)=>{
+    setSelected(id);
+    setShuffle(s=>s+1);
+    sound.playPop();
+    scrollToMatches();
+  };
+
+  const surpriseMood=()=>{
+    const next=moodData[Math.floor(Math.random()*moodData.length)];
+    setSelected(next.id);
+    setShuffle(s=>s+1);
+    sound.playPop();
+  };
+
+  return <main className="gv-main gv-page-moody">
+    <section className="gv-page-hero gv-moody-hero">
+      <p className="gv-eyebrow">YOUR VIBE IS THE REMOTE CONTROL</p>
+      <h1>HOW ARE WE<br/><em>FEELING?</em></h1>
+      <p>Pick the energy. We’ll turn it into a game plan.</p>
+      <button className="gv-cta gv-cta-purple" onClick={surpriseMood}>SURPRISE MY MOOD <Shuffle/></button>
+    </section>
+
+    <section className="gv-mood-wall">
+      {moodData.map(m=>{
+        const I=m.icon;
+        return <button
+          key={m.id}
+          className={`gv-mood-tile ${selected===m.id?'selected':''}`}
+          onClick={()=>chooseMood(m.id)}
+          style={{'--p':m.primary,'--s':m.secondary,'--a':m.accent} as React.CSSProperties}
+        >
+          <div><I/><strong>{m.label}</strong></div>
+          <span>{m.text}</span>
+          <ArrowRight/>
+        </button>
+      })}
+    </section>
+
+    <section
+      ref={resultsRef}
+      className="gv-mood-result"
+      key={shuffle}
+      style={{'--p':mood.primary,'--s':mood.secondary,'--a':mood.accent} as React.CSSProperties}
+    >
+      <div className="gv-result-copy">
+        <p className="gv-eyebrow">MOOD MATCH FOUND</p>
+        <h2>{mood.label}<br/><em>energy detected.</em></h2>
+        <p>These games match your pace right now. Zero overthinking required.</p>
+        <button onClick={surpriseMood}>RESHUFFLE PICKS <Shuffle/></button>
+      </div>
+      <div className="gv-result-games">
+        {picks.slice(0,4).map((g,i)=><button key={g.id} className="gv-result-game" onClick={()=>onSelectGame(g)}>
+          <span>{String(i+1).padStart(2,'0')}</span>
+          <IconHelper name={g.icon} className="w-8 h-8"/>
+          <b>{g.title}</b>
+          <small>{g.description}</small>
+          <i>PLAY <ArrowRight/></i>
+        </button>)}
+      </div>
+    </section>
+  </main>;
 };
 
 const GamesPage: React.FC<HomeProps & {search:string;setSearch:(v:string)=>void}> = ({games,stats,favorites,onSelectGame,onToggleFavorite,search,setSearch}) => {

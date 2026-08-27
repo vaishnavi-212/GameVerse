@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GameItem } from '../../types';
-import { ChevronLeft, HelpCircle, RotateCcw, Volume2, VolumeX, Star, Pause, Play } from 'lucide-react';
-import { InstructionsModal } from './InstructionsModal';
+import { ChevronLeft, RotateCcw, Volume2, VolumeX, Star, Pause, Play } from 'lucide-react';
 import { IconHelper } from './IconHelper';
 import { sound } from '../../utils/audio';
 
@@ -32,14 +31,12 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   children,
   extraHeaderControls,
 }) => {
-  const [showInstructions, setShowInstructions] = useState(false);
-
   return (
     <div className="flex flex-col min-h-screen gv-game-shell font-sans antialiased selection:bg-indigo-500 selection:text-white">
       {/* Top Game Bar */}
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-3 gv-game-header select-none">
         {/* Left: Back Button & Title */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="gv-game-header-left flex items-center gap-2 sm:gap-4 min-w-0">
           <button
             onClick={() => {
               sound.playClick();
@@ -51,11 +48,11 @@ export const GameContainer: React.FC<GameContainerProps> = ({
             <span className="hidden xs:inline">Hub</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="gv-game-title-group flex items-center gap-3 min-w-0">
             <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${game.gradient} text-white shadow-md flex items-center justify-center`}>
               <IconHelper name={game.icon} className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h1 className="text-sm sm:text-base font-bold gv-game-title leading-tight font-heading flex items-center gap-2">
                 {game.title}
                 {game.badge && (
@@ -69,82 +66,65 @@ export const GameContainer: React.FC<GameContainerProps> = ({
           </div>
         </div>
 
-        {/* Center: Scores (if available) */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {score !== undefined && (
-            <div className="py-1.5 px-3 sm:px-4 rounded-2xl gv-score-box text-center">
-              <span className="text-[9px] text-white/40 block font-bold leading-none mb-0.5 tracking-wider uppercase font-mono">
-                SCORE
-              </span>
-              <span className="text-sm sm:text-base font-black gv-score-value font-mono leading-none">{score}</span>
-            </div>
-          )}
-          {highScore !== undefined && (
-            <div className="hidden xs:block py-1.5 px-3 sm:px-4 rounded-2xl gv-score-box gv-best-box text-center">
-              <span className="text-[9px] gv-accent-text flex items-center justify-center gap-0.5 font-bold leading-none mb-0.5 tracking-wider uppercase font-mono">
-                <Star className="w-2.5 h-2.5 fill-amber-400 gv-accent-text" /> BEST
-              </span>
-              <span className="text-sm sm:text-base font-black gv-accent-text font-mono leading-none">{highScore}</span>
-            </div>
-          )}
-        </div>
+        {/* Score + core actions stay together so mobile screens never waste a row. */}
+        <div className="gv-game-header-utility">
+          <div className="gv-game-header-scores flex items-center gap-2 sm:gap-3">
+            {score !== undefined && (
+              <div className="py-1.5 px-3 sm:px-4 rounded-2xl gv-score-box text-center">
+                <span className="text-[9px] text-white/40 block font-bold leading-none mb-0.5 tracking-wider uppercase font-mono">
+                  SCORE
+                </span>
+                <span className="text-sm sm:text-base font-black gv-score-value font-mono leading-none">{score}</span>
+              </div>
+            )}
+            {highScore !== undefined && (
+              <div className="hidden xs:block py-1.5 px-3 sm:px-4 rounded-2xl gv-score-box gv-best-box text-center">
+                <span className="text-[9px] gv-accent-text flex items-center justify-center gap-0.5 font-bold leading-none mb-0.5 tracking-wider uppercase font-mono">
+                  <Star className="w-2.5 h-2.5 fill-amber-400 gv-accent-text" /> BEST
+                </span>
+                <span className="text-sm sm:text-base font-black gv-accent-text font-mono leading-none">{highScore}</span>
+              </div>
+            )}
+          </div>
 
-        {/* Right: Game Action Controls */}
-        <div className="flex items-center gap-2">
-          {extraHeaderControls}
-
-          {onPauseToggle && (
+          <div className="gv-standard-controls" aria-label="Game controls">
+            {onPauseToggle && (
+              <button
+                onClick={() => { sound.playClick(); onPauseToggle(); }}
+                title={isPaused ? 'Resume Game' : 'Pause Game'}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-colors flex items-center justify-center cursor-pointer ${
+                  isPaused ? 'gv-pause-active' : 'gv-game-control'
+                }`}
+              >
+                {isPaused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4" />}
+              </button>
+            )}
+            {onRestart && (
+              <button
+                onClick={() => { sound.playClick(); onRestart(); }}
+                title="Restart Game"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full gv-game-control transition-colors flex items-center justify-center cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
             <button
-              onClick={() => {
-                sound.playClick();
-                onPauseToggle();
-              }}
-              title={isPaused ? 'Resume Game' : 'Pause Game'}
-              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-colors flex items-center justify-center cursor-pointer ${
-                isPaused
-                  ? 'gv-pause-active'
-                  : 'gv-game-control'
-              }`}
-            >
-              {isPaused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4" />}
-            </button>
-          )}
-
-          {onRestart && (
-            <button
-              onClick={() => {
-                sound.playClick();
-                onRestart();
-              }}
-              title="Restart Game"
+              onClick={() => { sound.playClick(); onToggleSound(); }}
+              title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full gv-game-control transition-colors flex items-center justify-center cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4" />
+              {soundEnabled ? <Volume2 className="w-4 h-4 gv-accent-text" /> : <VolumeX className="w-4 h-4 text-white/30" />}
             </button>
-          )}
-
-          <button
-            onClick={() => {
-              sound.playClick();
-              onToggleSound();
-            }}
-            title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full gv-game-control transition-colors flex items-center justify-center cursor-pointer"
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 gv-accent-text" /> : <VolumeX className="w-4 h-4 text-white/30" />}
-          </button>
-
-          <button
-            onClick={() => {
-              sound.playClick();
-              setShowInstructions(true);
-            }}
-            title="How to Play"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full gv-accent-button transition-colors flex items-center justify-center cursor-pointer"
-          >
-            <HelpCircle className="w-4 h-4" />
-          </button>
+          </div>
         </div>
+
+        {/* Per-game options stay on their own row when present. */}
+        {extraHeaderControls && (
+          <div className="gv-extra-controls" aria-label="Game options">
+            {extraHeaderControls}
+          </div>
+        )}
+
       </header>
 
       {/* Main Game Screen Canvas / Area */}
@@ -152,12 +132,6 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         {children}
       </main>
 
-      {/* Instructions Modal */}
-      <InstructionsModal
-        game={game}
-        isOpen={showInstructions}
-        onClose={() => setShowInstructions(false)}
-      />
     </div>
   );
 };

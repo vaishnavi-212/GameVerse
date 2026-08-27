@@ -1181,3 +1181,643 @@
      visual function of the page, rather than an optional decoration. */
   .gv-galaxy-game{animation:gv-next-play-card-orbit 12s linear infinite !important;}
 }
+
+
+/* =========================================================
+   MOBILE GAME SCREEN PASS — shared phone-safe layout
+   Header, boards, controls and overlays are intentionally
+   responsive. No game logic or database code is changed here.
+   ========================================================= */
+
+/* Prevent horizontal clipping anywhere inside an active game. */
+.gameverse-game-root,
+.gameverse-game-root .gv-game-shell,
+.gameverse-game-root .gv-game-shell main{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+.gameverse-game-root .gv-game-shell main{
+  min-width:0;
+}
+
+/* Give every game board/card a sensible maximum on narrow screens. */
+.gameverse-game-root canvas,
+.gameverse-game-root .memory-board-shell,
+.gameverse-game-root .hangman-stage,
+.gameverse-game-root .rps-stage{
+  max-width:100%;
+}
+
+/* Better touch feedback and no accidental double-tap zoom delay on controls. */
+.gameverse-game-root button,
+.gameverse-game-root [role="button"]{
+  touch-action:manipulation;
+}
+
+@media(max-width:640px){
+  .gv-game-shell{
+    min-height:100svh;
+  }
+
+  /* Compact, two-row header: nothing gets pushed off the right edge. */
+  .gv-game-header{
+    min-height:0!important;
+    height:auto!important;
+    padding:8px 10px!important;
+    gap:8px!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+  }
+  .gv-game-header-left{
+    order:1;
+    flex:1 1 calc(100% - 158px);
+    min-width:0!important;
+    gap:8px!important;
+  }
+  .gv-game-header-left > button{
+    flex:0 0 auto;
+    width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    padding:0!important;
+    border-radius:12px!important;
+    justify-content:center!important;
+  }
+  .gv-game-header-left > button span{
+    display:none!important;
+  }
+  .gv-game-title-group{
+    min-width:0!important;
+    gap:8px!important;
+  }
+  .gv-game-title-group > div:first-child{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    min-height:34px!important;
+    border-radius:10px!important;
+  }
+  .gv-game-title-group > div:first-child svg{
+    width:18px!important;
+    height:18px!important;
+  }
+  .gv-game-title{
+    display:block!important;
+    max-width:100%;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    font-size:13px!important;
+    line-height:1.1!important;
+  }
+  .gv-game-subtitle{
+    display:none!important;
+  }
+  .gv-game-title .hidden{
+    display:none!important;
+  }
+
+  .gv-game-header-scores{
+    order:2;
+    flex:0 0 auto;
+    gap:5px!important;
+  }
+  .gv-game-header-scores .gv-score-box{
+    min-width:48px!important;
+    padding:5px 7px!important;
+    border-radius:12px!important;
+    box-shadow:2px 2px 0 #171923!important;
+  }
+  .gv-game-header-scores .gv-score-box span:first-child{
+    display:none!important;
+  }
+  .gv-game-header-scores .gv-score-box span:last-child{
+    font-size:12px!important;
+  }
+
+  .gv-game-header-actions{
+    order:3;
+    width:100%;
+    flex:1 1 100%;
+    justify-content:space-between!important;
+    gap:6px!important;
+    padding-top:2px;
+  }
+  .gv-game-header-actions > button{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+    border-radius:13px!important;
+    flex:0 0 auto;
+  }
+  .gv-game-header-actions > :first-child:not(button){
+    min-width:0;
+  }
+
+  /* Use the screen efficiently without the desktop-sized canvas padding. */
+  .gv-game-shell main{
+    justify-content:flex-start!important;
+    padding:10px 8px 18px!important;
+  }
+
+  /* Shared stat strips can shrink instead of overflowing. */
+  .gameverse-game-root [class*="grid-cols-3"][class*="text-center"]{
+    gap:6px!important;
+  }
+
+  /* Game-over cards fit below the phone header. */
+  .gameverse-game-root .gv-gameover-panel{
+    width:calc(100vw - 20px)!important;
+    max-width:calc(100vw - 20px)!important;
+    padding:18px!important;
+    border-radius:20px!important;
+    box-shadow:6px 7px 0 #171923!important;
+  }
+
+  /* Bubble Shooter: canvas first, compact side information below. */
+  .gv-game-shell:has(canvas[aria-label*="Bubble shooter"]) main{
+    padding:8px!important;
+  }
+  .gv-game-shell:has(canvas[aria-label*="Bubble shooter"]) section{
+    min-height:0!important;
+    padding:5px!important;
+    border-radius:22px!important;
+    box-shadow:5px 6px 0 rgba(15,23,42,.28)!important;
+  }
+
+  /* Fixed-size archery target becomes fluid. */
+  .gameverse-game-root .relative.w-\[300px\]{
+    width:min(300px,calc(100vw - 32px))!important;
+    height:min(300px,calc(100vw - 32px))!important;
+  }
+  .gameverse-game-root .relative.w-\[300px\] > .w-\[250px\]{
+    width:83.333%!important;
+    height:83.333%!important;
+  }
+  .gameverse-game-root .relative.w-\[300px\] .w-\[190px\]{
+    width:76%!important;
+    height:76%!important;
+  }
+  .gameverse-game-root .relative.w-\[300px\] .w-\[130px\]{
+    width:68.5%!important;
+    height:68.5%!important;
+  }
+  .gameverse-game-root .relative.w-\[300px\] .w-\[70px\]{
+    width:53.8%!important;
+    height:53.8%!important;
+  }
+  .gameverse-game-root .relative.w-\[300px\] .w-\[30px\]{
+    width:42.8%!important;
+    height:42.8%!important;
+  }
+
+  /* Boards stay square and never exceed the viewport. */
+  .gameverse-game-root .grid.grid-cols-8.border-4,
+  .gameverse-game-root .grid.grid-cols-9.border-4,
+  .gameverse-game-root .grid.grid-cols-10.border-4{
+    max-width:calc(100vw - 28px)!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Chess / Checkers / Connect Four pieces remain tappable. */
+  .gameverse-game-root .grid.grid-cols-8 button,
+  .gameverse-game-root .grid.grid-cols-7 button,
+  .gameverse-game-root .grid.grid-cols-9 button{
+    min-width:0;
+  }
+
+  /* Ludo and Snakes & Ladders use the full safe width without page overflow. */
+  .gameverse-game-root .max-w-5xl,
+  .gameverse-game-root .max-w-4xl{
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  /* Typing/quiz content should not be hidden behind a fixed desktop height. */
+  .gameverse-game-root textarea,
+  .gameverse-game-root input{
+    max-width:100%!important;
+  }
+}
+
+@media(max-width:420px){
+  .gv-game-header{
+    padding:7px 8px!important;
+  }
+  .gv-game-header-left{
+    flex-basis:calc(100% - 142px);
+  }
+  .gv-game-header-scores .gv-score-box{
+    min-width:42px!important;
+    padding:4px 6px!important;
+  }
+  .gv-game-header-actions > button{
+    width:39px!important;
+    height:39px!important;
+    min-width:39px!important;
+    min-height:39px!important;
+  }
+  .gv-game-shell main{
+    padding-left:6px!important;
+    padding-right:6px!important;
+  }
+
+  /* Denser boards on very small phones. */
+  .gameverse-game-root .grid.grid-cols-7{gap:5px!important;}
+  .gameverse-game-root .grid.grid-cols-8,
+  .gameverse-game-root .grid.grid-cols-9,
+  .gameverse-game-root .grid.grid-cols-10{border-width:3px!important;}
+
+  /* Compact result and status cards. */
+  .gameverse-game-root .rounded-3xl,
+  .gameverse-game-root .rounded-\[32px\]{
+    border-radius:18px;
+  }
+}
+
+@media(orientation:landscape) and (max-height:540px){
+  .gv-game-header{
+    position:relative!important;
+  }
+  .gv-game-header-actions{
+    width:auto!important;
+    flex:0 0 auto!important;
+    order:2;
+  }
+  .gv-game-header-left{
+    flex:1 1 auto;
+  }
+  .gv-game-shell main{
+    padding-top:6px!important;
+    padding-bottom:10px!important;
+  }
+}
+
+/* =========================================================
+   FINAL MOBILE GAME HEADER FIX — every game shares this shell
+   ========================================================= */
+@media (max-width: 640px){
+  .gameverse-game-root .gv-game-header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:
+      "identity scores"
+      "actions actions";
+    align-items:center!important;
+    gap:8px 10px!important;
+    padding:8px 10px 10px!important;
+  }
+
+  .gameverse-game-root .gv-game-header-left{
+    grid-area:identity;
+    order:unset!important;
+    width:auto!important;
+    min-width:0!important;
+    flex:none!important;
+  }
+
+  .gameverse-game-root .gv-game-header-scores{
+    grid-area:scores;
+    order:unset!important;
+    width:auto!important;
+    min-width:0!important;
+    flex:none!important;
+    justify-content:flex-end!important;
+  }
+
+  .gameverse-game-root .gv-game-title-group{min-width:0!important;}
+  .gameverse-game-root .gv-game-title{
+    min-width:0!important;
+    max-width:100%!important;
+    font-size:13px!important;
+    line-height:1.15!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  .gameverse-game-root .gv-game-header-actions{
+    grid-area:actions;
+    order:unset!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:7px!important;
+    padding-top:0!important;
+  }
+
+  .gameverse-game-root .gv-extra-controls{
+    display:flex!important;
+    justify-content:center!important;
+    align-items:center!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none;
+    padding:1px 0!important;
+  }
+  .gameverse-game-root .gv-extra-controls::-webkit-scrollbar{display:none;}
+  .gameverse-game-root .gv-extra-controls > *{
+    flex:0 0 auto;
+    max-width:100%;
+  }
+  .gameverse-game-root .gv-extra-controls > div{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:4px!important;
+    max-width:100%!important;
+  }
+  .gameverse-game-root .gv-extra-controls button{
+    min-height:36px!important;
+    height:auto!important;
+    min-width:0!important;
+    border-radius:10px!important;
+    font-size:11px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+  }
+  .gameverse-game-root .gv-extra-controls button span{white-space:nowrap!important;}
+
+  .gameverse-game-root .gv-standard-controls{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    width:100%!important;
+  }
+  .gameverse-game-root .gv-standard-controls > button{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    border-radius:13px!important;
+    flex:0 0 auto!important;
+  }
+  .gameverse-game-root .gv-standard-controls > button svg{
+    width:18px!important;
+    height:18px!important;
+  }
+
+  /* The floating guide must not sit over touch controls or board buttons. */
+  .gameverse-game-root .game-help-fab{
+    width:48px!important;
+    height:48px!important;
+    min-width:48px!important;
+    padding:0!important;
+    right:max(10px,env(safe-area-inset-right))!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+    justify-content:center!important;
+    border:2px solid #171923!important;
+    box-shadow:4px 4px 0 #171923!important;
+  }
+  .gameverse-game-root .game-help-fab span{display:none!important;}
+  .gameverse-game-root .game-help-fab svg{width:21px!important;height:21px!important;}
+  .gameverse-game-root .gv-game-shell main{padding-bottom:76px!important;}
+}
+
+@media (max-width: 420px){
+  .gameverse-game-root .gv-game-header{gap:7px 8px!important;padding:7px 8px 9px!important;}
+  .gameverse-game-root .gv-game-title-group > div:first-child{width:32px!important;height:32px!important;min-width:32px!important;}
+  .gameverse-game-root .gv-game-title{font-size:12px!important;}
+  .gameverse-game-root .gv-game-header-scores{gap:4px!important;}
+  .gameverse-game-root .gv-game-header-scores .gv-score-box{min-width:42px!important;padding:5px 6px!important;}
+  .gameverse-game-root .gv-extra-controls button{min-height:34px!important;font-size:10px!important;}
+  .gameverse-game-root .gv-standard-controls{gap:7px!important;}
+  .gameverse-game-root .gv-standard-controls > button{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;}
+}
+
+/* =========================================================
+   FINAL PER-GAME MOBILE HEADER AUDIT FIX
+   Every game uses GameContainer, so this deliberately replaces the
+   previous narrow-screen header rules instead of relying on one layout
+   accidentally fitting a particular game.
+   ========================================================= */
+@media (max-width: 640px){
+  .gameverse-game-root .gv-game-shell{min-width:0!important;overflow-x:hidden!important;}
+  .gameverse-game-root .gv-game-header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:
+      "identity scores"
+      "extras extras"
+      "actions actions";
+    width:100%!important;
+    max-width:100vw!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    gap:8px!important;
+    padding:8px 8px 10px!important;
+  }
+
+  .gameverse-game-root .gv-game-header-left{
+    grid-area:identity!important;
+    display:flex!important;
+    align-items:center!important;
+    min-width:0!important;
+    width:auto!important;
+    gap:7px!important;
+    overflow:hidden!important;
+  }
+  .gameverse-game-root .gv-game-header-left > button{
+    width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;
+    padding:0!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;
+  }
+  .gameverse-game-root .gv-game-title-group{display:flex!important;align-items:center!important;min-width:0!important;flex:1 1 auto!important;gap:7px!important;overflow:hidden!important;}
+  .gameverse-game-root .gv-game-title-group > div:first-child{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex:0 0 auto!important;}
+  .gameverse-game-root .gv-game-title-group > div:last-child{min-width:0!important;overflow:hidden!important;}
+  .gameverse-game-root .gv-game-title{
+    display:block!important;min-width:0!important;width:100%!important;max-width:100%!important;
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+    font-size:13px!important;line-height:1.1!important;
+  }
+
+  .gameverse-game-root .gv-game-header-scores{
+    grid-area:scores!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;
+    gap:5px!important;min-width:0!important;width:auto!important;overflow:visible!important;
+  }
+  .gameverse-game-root .gv-game-header-scores .gv-score-box{
+    min-width:48px!important;height:38px!important;padding:4px 7px!important;
+    display:grid!important;place-items:center!important;border-radius:11px!important;box-shadow:2px 2px 0 #171923!important;
+  }
+  .gameverse-game-root .gv-game-header-scores .gv-score-box span:first-child{display:none!important;}
+  .gameverse-game-root .gv-game-header-scores .gv-score-box span:last-child{font-size:12px!important;line-height:1!important;}
+
+  .gameverse-game-root .gv-game-header-actions{
+    display:contents!important;
+    width:auto!important;min-width:0!important;padding:0!important;margin:0!important;
+  }
+
+  .gameverse-game-root .gv-extra-controls{
+    grid-area:extras!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    overflow:visible!important;padding:0!important;margin:0!important;
+  }
+  .gameverse-game-root .gv-extra-controls > *,
+  .gameverse-game-root .gv-extra-controls > div{
+    display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;gap:5px!important;
+  }
+  .gameverse-game-root .gv-extra-controls button{
+    flex:0 1 auto!important;min-width:0!important;max-width:calc(100vw - 24px)!important;
+    min-height:36px!important;height:auto!important;padding:7px 10px!important;
+    font-size:10px!important;line-height:1.1!important;white-space:nowrap!important;
+    box-sizing:border-box!important;
+  }
+  .gameverse-game-root .gv-extra-controls button svg{width:15px!important;height:15px!important;flex:0 0 auto!important;}
+
+  .gameverse-game-root .gv-standard-controls{
+    grid-area:actions!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;
+    width:100%!important;max-width:100%!important;gap:8px!important;padding-top:1px!important;
+  }
+  .gameverse-game-root .gv-standard-controls > button{
+    width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
+    padding:0!important;display:grid!important;place-items:center!important;flex:0 0 42px!important;
+  }
+
+  /* Never reserve an empty extra-controls row for games that do not have one. */
+  .gameverse-game-root .gv-extra-controls:empty{display:none!important;}
+
+  /* Give the board enough room so the fixed guide cannot cover controls. */
+  .gameverse-game-root .gv-game-shell main{padding:10px 7px 96px!important;min-width:0!important;}
+}
+
+@media (max-width: 390px){
+  .gameverse-game-root .gv-game-header{gap:7px!important;padding:7px 7px 9px!important;}
+  .gameverse-game-root .gv-game-title{font-size:12px!important;}
+  .gameverse-game-root .gv-game-header-scores .gv-score-box{min-width:43px!important;width:43px!important;height:36px!important;padding:4px!important;}
+  .gameverse-game-root .gv-extra-controls button{min-height:34px!important;padding:6px 8px!important;font-size:9px!important;}
+  .gameverse-game-root .gv-standard-controls > button{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;flex-basis:40px!important;}
+}
+
+/* =========================================================
+   UNIVERSAL GAME HEADER LAYOUT — score, replay and sound together
+   ========================================================= */
+.gv-game-header{position:relative;}
+.gv-game-header-utility{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;}
+.gv-standard-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+.gv-extra-controls{display:flex;align-items:center;justify-content:center;min-width:0;}
+
+@media (max-width: 640px){
+  .gameverse-game-root .gv-game-header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:
+      "identity utility"
+      "extras extras"!important;
+    width:100%!important;
+    max-width:100vw!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:8px 8px 10px!important;
+  }
+  .gameverse-game-root .gv-game-header-left{
+    grid-area:identity!important;
+    min-width:0!important;
+    width:auto!important;
+    overflow:hidden!important;
+  }
+  .gameverse-game-root .gv-game-header-utility{
+    grid-area:utility!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:6px!important;
+    min-width:0!important;
+    width:auto!important;
+    overflow:visible!important;
+  }
+  .gameverse-game-root .gv-game-header-scores{
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    min-width:0!important;
+    width:auto!important;
+  }
+  .gameverse-game-root .gv-game-header-scores .gv-score-box{
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:12px!important;
+    box-sizing:border-box!important;
+  }
+  .gameverse-game-root .gv-game-header-scores .gv-score-box span:first-child{display:none!important;}
+  .gameverse-game-root .gv-game-header-scores .gv-score-box span:last-child{font-size:12px!important;line-height:1!important;}
+  .gameverse-game-root .gv-standard-controls{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    flex-wrap:nowrap!important;
+    gap:6px!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  .gameverse-game-root .gv-standard-controls > button{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+    flex:0 0 42px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:12px!important;
+    box-sizing:border-box!important;
+  }
+  .gameverse-game-root .gv-standard-controls > button svg{width:18px!important;height:18px!important;}
+  .gameverse-game-root .gv-extra-controls{
+    grid-area:extras!important;
+    width:100%!important;
+    min-width:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  .gameverse-game-root .gv-extra-controls > *,
+  .gameverse-game-root .gv-extra-controls > div{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:5px!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .gameverse-game-root .gv-extra-controls:empty{display:none!important;}
+  .gameverse-game-root .gv-extra-controls:not(:has(*)){display:none!important;}
+}
+
+@media (max-width: 420px){
+  .gameverse-game-root .gv-game-header{padding:7px!important;gap:7px!important;}
+  .gameverse-game-root .gv-game-header-utility{gap:5px!important;}
+  .gameverse-game-root .gv-game-header-scores .gv-score-box,
+  .gameverse-game-root .gv-standard-controls > button{
+    width:38px!important;
+    min-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    flex-basis:38px!important;
+  }
+  .gameverse-game-root .gv-standard-controls{gap:5px!important;}
+}
